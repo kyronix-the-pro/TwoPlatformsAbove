@@ -3,17 +3,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Two Platforms Above</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Space Grotesk', sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     /* Screen Base & Animated Gradient Background */
@@ -52,6 +48,7 @@
       text-transform: uppercase;
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
       margin-bottom: 10px;
+      font-weight: 800;
     }
 
     /* Buttons */
@@ -108,6 +105,7 @@
       font-size: 1.3rem;
       text-align: center;
       margin-bottom: 5px;
+      font-weight: 700;
     }
 
     .slot-btn {
@@ -118,7 +116,7 @@
       color: #ffffff;
       border-radius: 6px;
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -154,6 +152,7 @@
     .loading-text {
       font-size: 2rem;
       letter-spacing: 2px;
+      font-weight: 700;
     }
 
     .progress-bar-bg {
