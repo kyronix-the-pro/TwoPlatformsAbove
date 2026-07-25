@@ -261,7 +261,7 @@
     /* --- GAME CODE --- */
     let keys = {};
     let cameraX = 0;
-    let minPlayerX = 100; // Furthest left boundary
+    let bgAnimOffset = 0;
 
     const player = {
       x: 100,
@@ -288,7 +288,7 @@
       window.addEventListener('keydown', (e) => keys[e.code] = true);
       window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-      player.y = canvas.height - 150 - player.height;
+      player.y = canvas.height - 100 - player.height;
       requestAnimationFrame(gameLoop);
     }
 
@@ -315,15 +315,8 @@
       player.x += player.vx;
       player.y += player.vy;
 
-      // Camera follows rightwards endlessly
-      if (player.x - cameraX > canvas.width * 0.4) {
-        cameraX = player.x - canvas.width * 0.4;
-      }
-
-      // Restrict left movement (Cannot go left past camera view)
-      if (player.x < cameraX + 20) {
-        player.x = cameraX + 20;
-      }
+      // Camera centers smoothly around player (Infinite left & right walking)
+      cameraX = player.x - canvas.width / 2 + player.width / 2;
 
       // Ground Collision
       const groundY = canvas.height - 100;
@@ -332,6 +325,9 @@
         player.vy = 0;
         player.grounded = true;
       }
+
+      // Moving Background Animation Offset
+      bgAnimOffset += 0.5;
     }
 
     function drawCylinder(x, y, w, h) {
@@ -370,20 +366,53 @@
       ctx.stroke();
     }
 
-    function render() {
-      // Clear Screen (Background)
-      ctx.fillStyle = '#111625';
+    function drawMovingBackground() {
+      // Dark Animated Base Gradient
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, '#0f2027');
+      gradient.addColorStop(0.5, '#203a43');
+      gradient.addColorStop(1, '#111111');
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Moving Parallax Grid Effect
+      const gridSize = 60;
+      const offsetX = (-cameraX * 0.3 + bgAnimOffset) % gridSize;
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+      ctx.lineWidth = 1;
+
+      // Vertical Grid Lines
+      for (let x = offsetX - gridSize; x < canvas.width + gridSize; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+
+      // Horizontal Grid Lines
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function render() {
+      // 1. Draw Moving Animated Background
+      drawMovingBackground();
+
+      // 2. Draw World Objects with Camera Offset
       ctx.save();
       ctx.translate(-cameraX, 0);
 
-      // Draw Endless Ground
+      // Draw Infinite Ground
       const groundY = canvas.height - 100;
-      ctx.fillStyle = '#222938';
+      ctx.fillStyle = '#181d28';
       ctx.fillRect(cameraX - 100, groundY, canvas.width + 200, 100);
 
-      // Ground Top Line
+      // Neon Green Ground Surface
       ctx.strokeStyle = '#00ff66';
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -391,7 +420,7 @@
       ctx.lineTo(cameraX + canvas.width + 100, groundY);
       ctx.stroke();
 
-      // Draw Player (Blue Cylinder)
+      // Draw Blue Cylinder Player
       drawCylinder(player.x, player.y, player.width, player.height);
 
       ctx.restore();
