@@ -12,33 +12,17 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Remove any blue link styling site-wide */
-    a, a:visited, a:hover, a:active {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* Screen Base & Animated Gradient Background */
     body {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #111111);
-      background-size: 400% 400%;
-      animation: gradientBG 12s ease infinite;
+      background: #000000;
       color: #ffffff;
-      transition: background 0.3s ease;
     }
 
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    /* Main Menu Frame */
+    /* Main Menu */
     .menu-container {
       text-align: center;
       display: flex;
@@ -55,10 +39,8 @@
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
       margin-bottom: 10px;
       font-weight: 800;
-      color: #ffffff;
     }
 
-    /* Buttons */
     .menu-btn {
       width: 220px;
       padding: 14px;
@@ -80,7 +62,7 @@
       transform: translateY(-2px);
     }
 
-    /* Slot Selection Modal Box */
+    /* Modal Box */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -105,13 +87,11 @@
       flex-direction: column;
       gap: 15px;
       box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-      position: relative;
     }
 
     .modal-title {
       font-size: 1.3rem;
       text-align: center;
-      margin-bottom: 5px;
       font-weight: 700;
     }
 
@@ -125,7 +105,6 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
     }
 
     .slot-btn:hover:not(:disabled) {
@@ -139,7 +118,6 @@
     }
 
     .close-btn {
-      margin-top: 5px;
       background: transparent;
       border: none;
       color: #888888;
@@ -148,7 +126,7 @@
       text-decoration: underline;
     }
 
-    /* Loading Screen Container */
+    /* Loading Screen */
     .loading-container {
       display: none;
       flex-direction: column;
@@ -176,18 +154,13 @@
       height: 100%;
       background: #00ff66;
       box-shadow: 0 0 10px #00ff66;
-      transition: width 0.1s linear;
     }
 
-    /* States */
-    body.state-black {
-      background: #000000 !important;
-      animation: none !important;
-    }
-
-    body.state-white {
-      background: #ffffff !important;
-      animation: none !important;
+    /* Game Canvas */
+    #gameCanvas {
+      display: none;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
 </head>
@@ -216,6 +189,8 @@
     </div>
   </div>
 
+  <canvas id="gameCanvas"></canvas>
+
   <script>
     let currentMode = '';
 
@@ -224,6 +199,8 @@
     const modalTitle = document.getElementById('modalTitle');
     const loadingContainer = document.getElementById('loadingContainer');
     const progressFill = document.getElementById('progressFill');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
 
     document.getElementById('newGameBtn').addEventListener('click', () => openModal('new'));
     document.getElementById('loadGameBtn').addEventListener('click', () => openModal('load'));
@@ -240,16 +217,10 @@
           slotButton.disabled = false;
           slotButton.innerText = hasSavedGame ? `Slot ${i} (Overwrite)` : `Slot ${i} (Empty)`;
         } else if (mode === 'load') {
-          if (hasSavedGame) {
-            slotButton.disabled = false;
-            slotButton.innerText = `Slot ${i}: Game Saved`;
-          } else {
-            slotButton.disabled = true;
-            slotButton.innerText = `Slot ${i}: Empty`;
-          }
+          slotButton.disabled = !hasSavedGame;
+          slotButton.innerText = hasSavedGame ? `Slot ${i}: Game Saved` : `Slot ${i}: Empty`;
         }
       }
-
       slotModal.style.display = 'flex';
     }
 
@@ -261,14 +232,12 @@
       if (currentMode === 'new') {
         localStorage.setItem(`save_slot_${slotNumber}`, 'active');
       }
-      
       closeModal();
       startLoadingSequence();
     }
 
     function startLoadingSequence() {
       menuContainer.style.display = 'none';
-      document.body.classList.add('state-black');
       loadingContainer.style.display = 'flex';
 
       let progress = 0;
@@ -280,13 +249,158 @@
           clearInterval(interval);
           finishLoading();
         }
-      }, 40);
+      }, 30);
     }
 
     function finishLoading() {
       loadingContainer.style.display = 'none';
-      document.body.classList.remove('state-black');
-      document.body.classList.add('state-white');
+      canvas.style.display = 'block';
+      initGame();
+    }
+
+    /* --- GAME CODE --- */
+    let keys = {};
+    let cameraX = 0;
+    let minPlayerX = 100; // Furthest left boundary
+
+    const player = {
+      x: 100,
+      y: 0,
+      width: 40,
+      height: 70,
+      vx: 0,
+      vy: 0,
+      speed: 6,
+      jumpForce: -14,
+      gravity: 0.7,
+      grounded: false
+    };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function initGame() {
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      window.addEventListener('keydown', (e) => keys[e.code] = true);
+      window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+      player.y = canvas.height - 150 - player.height;
+      requestAnimationFrame(gameLoop);
+    }
+
+    function update() {
+      // Horizontal Movement
+      if (keys['ArrowRight'] || keys['KeyD']) {
+        player.vx = player.speed;
+      } else if (keys['ArrowLeft'] || keys['KeyA']) {
+        player.vx = -player.speed;
+      } else {
+        player.vx = 0;
+      }
+
+      // Jump
+      if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.grounded) {
+        player.vy = player.jumpForce;
+        player.grounded = false;
+      }
+
+      // Apply Gravity
+      player.vy += player.gravity;
+
+      // Update position
+      player.x += player.vx;
+      player.y += player.vy;
+
+      // Camera follows rightwards endlessly
+      if (player.x - cameraX > canvas.width * 0.4) {
+        cameraX = player.x - canvas.width * 0.4;
+      }
+
+      // Restrict left movement (Cannot go left past camera view)
+      if (player.x < cameraX + 20) {
+        player.x = cameraX + 20;
+      }
+
+      // Ground Collision
+      const groundY = canvas.height - 100;
+      if (player.y + player.height >= groundY) {
+        player.y = groundY - player.height;
+        player.vy = 0;
+        player.grounded = true;
+      }
+    }
+
+    function drawCylinder(x, y, w, h) {
+      const rx = w / 2;
+      const ry = 10;
+
+      // Cylinder Body
+      ctx.fillStyle = '#1e90ff';
+      ctx.fillRect(x, y + ry, w, h - (ry * 2));
+
+      // Top Ellipse
+      ctx.beginPath();
+      ctx.ellipse(x + rx, y + ry, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#63b3ff';
+      ctx.fill();
+      ctx.strokeStyle = '#005bb5';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Bottom Ellipse
+      ctx.beginPath();
+      ctx.ellipse(x + rx, y + h - ry, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#1e90ff';
+      ctx.fill();
+      ctx.strokeStyle = '#005bb5';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Outline Side Edges
+      ctx.beginPath();
+      ctx.moveTo(x, y + ry);
+      ctx.lineTo(x, y + h - ry);
+      ctx.moveTo(x + w, y + ry);
+      ctx.lineTo(x + w, y + h - ry);
+      ctx.strokeStyle = '#005bb5';
+      ctx.stroke();
+    }
+
+    function render() {
+      // Clear Screen (Background)
+      ctx.fillStyle = '#111625';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(-cameraX, 0);
+
+      // Draw Endless Ground
+      const groundY = canvas.height - 100;
+      ctx.fillStyle = '#222938';
+      ctx.fillRect(cameraX - 100, groundY, canvas.width + 200, 100);
+
+      // Ground Top Line
+      ctx.strokeStyle = '#00ff66';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cameraX - 100, groundY);
+      ctx.lineTo(cameraX + canvas.width + 100, groundY);
+      ctx.stroke();
+
+      // Draw Player (Blue Cylinder)
+      drawCylinder(player.x, player.y, player.width, player.height);
+
+      ctx.restore();
+    }
+
+    function gameLoop() {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
     }
   </script>
 
