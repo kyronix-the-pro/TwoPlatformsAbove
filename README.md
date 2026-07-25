@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -212,8 +211,7 @@
   </div>
 
   <script>
-    // System Variables
-    let currentMode = ''; // 'new' or 'load'
+    let currentMode = '';
 
     const menuContainer = document.getElementById('menuContainer');
     const slotModal = document.getElementById('slotModal');
@@ -221,7 +219,6 @@
     const loadingContainer = document.getElementById('loadingContainer');
     const progressFill = document.getElementById('progressFill');
 
-    // Button Listeners
     document.getElementById('newGameBtn').addEventListener('click', () => openModal('new'));
     document.getElementById('loadGameBtn').addEventListener('click', () => openModal('load'));
 
@@ -229,7 +226,6 @@
       currentMode = mode;
       modalTitle.innerText = mode === 'new' ? 'New Game - Choose Slot' : 'Load Game';
       
-      // Update slot display states based on saved data
       for (let i = 1; i <= 3; i++) {
         const slotButton = document.getElementById(`slot${i}`);
         const hasSavedGame = localStorage.getItem(`save_slot_${i}`);
@@ -257,7 +253,6 @@
 
     function selectSlot(slotNumber) {
       if (currentMode === 'new') {
-        // Create save record
         localStorage.setItem(`save_slot_${slotNumber}`, 'active');
       }
       
@@ -266,16 +261,10 @@
     }
 
     function startLoadingSequence() {
-      // Hide menu elements
       menuContainer.style.display = 'none';
-      
-      // Set background to solid black
       document.body.classList.add('state-black');
-      
-      // Show loading screen
       loadingContainer.style.display = 'flex';
 
-      // Animate progress bar
       let progress = 0;
       const interval = setInterval(() => {
         progress += 2;
@@ -285,11 +274,10 @@
           clearInterval(interval);
           finishLoading();
         }
-      }, 40); // Runs transition over ~2 seconds
+      }, 40);
     }
 
     function finishLoading() {
-      // Hide loading screen and transition to full white
       loadingContainer.style.display = 'none';
       document.body.classList.remove('state-black');
       document.body.classList.add('state-white');
