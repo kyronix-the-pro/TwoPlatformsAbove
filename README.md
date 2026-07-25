@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enter</title>
+  <title>Two Platforms Above</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,88 +17,283 @@
       font-family: 'Space Grotesk', sans-serif;
     }
 
+    /* Screen Base & Animated Gradient Background */
     body {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      transition: background 0.5s ease;
-      
-      /* Cool Black & White Grid/Dot Pattern Background */
-      background-color: #000000;
-      background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 0),
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-      background-size: 24px 24px, 40px 40px, 40px 40px;
-      background-position: 0 0;
+      background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #111111);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+      color: #ffffff;
+      transition: background 0.3s ease;
     }
 
-    /* Cool Glowing Button Style */
-    .enter-btn {
-      padding: 18px 48px;
-      font-size: 1.5rem;
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Main Menu Frame */
+    .menu-container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      z-index: 2;
+    }
+
+    h1.title {
+      font-size: 3rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+      margin-bottom: 10px;
+    }
+
+    /* Buttons */
+    .menu-btn {
+      width: 220px;
+      padding: 14px;
+      font-size: 1.2rem;
       font-weight: 700;
-      letter-spacing: 2px;
-      color: #000000;
-      background-color: #ffffff;
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.1);
       border: 2px solid #ffffff;
-      border-radius: 50px;
+      border-radius: 8px;
       cursor: pointer;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(5px);
       transition: all 0.3s ease;
     }
 
-    .enter-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 35px rgba(255, 255, 255, 0.8);
+    .menu-btn:hover {
       background-color: #ffffff;
       color: #000000;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
     }
 
-    .enter-btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Hidden State for Work in Progress Screen */
-    .wip-text {
+    /* Slot Selection Modal Box */
+    .modal-overlay {
       display: none;
-      font-size: 3rem;
-      font-weight: 700;
-      color: #000000;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      margin-bottom: 12vh; /* Positions it a little above the middle */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
     }
 
-    /* Active White Screen State */
-    body.active-white {
+    .modal-box {
+      width: 320px;
+      background: #111111;
+      border: 2px solid #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+      position: relative;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .slot-btn {
+      width: 100%;
+      padding: 12px;
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .slot-btn:hover:not(:disabled) {
+      border-color: #ffffff;
+      background: #2a2a2a;
+    }
+
+    .slot-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .close-btn {
+      margin-top: 5px;
+      background: transparent;
+      border: none;
+      color: #888888;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+
+    /* Loading Screen Container */
+    .loading-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .loading-text {
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+
+    .progress-bar-bg {
+      width: 300px;
+      height: 16px;
+      background: #222222;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #444444;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #00ff66;
+      box-shadow: 0 0 10px #00ff66;
+      transition: width 0.1s linear;
+    }
+
+    /* States */
+    body.state-black {
+      background: #000000 !important;
+      animation: none !important;
+    }
+
+    body.state-white {
       background: #ffffff !important;
-    }
-
-    body.active-white .enter-btn {
-      display: none;
-    }
-
-    body.active-white .wip-text {
-      display: block;
+      animation: none !important;
     }
   </style>
 </head>
 <body>
 
-  <button class="enter-btn" id="enterBtn">Enter.</button>
+  <div class="menu-container" id="menuContainer">
+    <h1 class="title">Two platforms Above</h1>
+    <button class="menu-btn" id="newGameBtn">New game</button>
+    <button class="menu-btn" id="loadGameBtn">Load game</button>
+  </div>
 
-  <div class="wip-text" id="wipText">WORK IN PROGRESS</div>
+  <div class="modal-overlay" id="slotModal">
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle">Select Slot</div>
+      <button class="slot-btn" id="slot1" onclick="selectSlot(1)">Slot 1</button>
+      <button class="slot-btn" id="slot2" onclick="selectSlot(2)">Slot 2</button>
+      <button class="slot-btn" id="slot3" onclick="selectSlot(3)">Slot 3</button>
+      <button class="close-btn" onclick="closeModal()">Back</button>
+    </div>
+  </div>
+
+  <div class="loading-container" id="loadingContainer">
+    <div class="loading-text">Loading...</div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
 
   <script>
-    const enterBtn = document.getElementById('enterBtn');
-    
-    enterBtn.addEventListener('click', () => {
-      // Toggle background to white and reveal the WIP text
-      document.body.classList.add('active-white');
-    });
+    // System Variables
+    let currentMode = ''; // 'new' or 'load'
+
+    const menuContainer = document.getElementById('menuContainer');
+    const slotModal = document.getElementById('slotModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const loadingContainer = document.getElementById('loadingContainer');
+    const progressFill = document.getElementById('progressFill');
+
+    // Button Listeners
+    document.getElementById('newGameBtn').addEventListener('click', () => openModal('new'));
+    document.getElementById('loadGameBtn').addEventListener('click', () => openModal('load'));
+
+    function openModal(mode) {
+      currentMode = mode;
+      modalTitle.innerText = mode === 'new' ? 'New Game - Choose Slot' : 'Load Game';
+      
+      // Update slot display states based on saved data
+      for (let i = 1; i <= 3; i++) {
+        const slotButton = document.getElementById(`slot${i}`);
+        const hasSavedGame = localStorage.getItem(`save_slot_${i}`);
+
+        if (mode === 'new') {
+          slotButton.disabled = false;
+          slotButton.innerText = hasSavedGame ? `Slot ${i} (Overwrite)` : `Slot ${i} (Empty)`;
+        } else if (mode === 'load') {
+          if (hasSavedGame) {
+            slotButton.disabled = false;
+            slotButton.innerText = `Slot ${i}: Game Saved`;
+          } else {
+            slotButton.disabled = true;
+            slotButton.innerText = `Slot ${i}: Empty`;
+          }
+        }
+      }
+
+      slotModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+      slotModal.style.display = 'none';
+    }
+
+    function selectSlot(slotNumber) {
+      if (currentMode === 'new') {
+        // Create save record
+        localStorage.setItem(`save_slot_${slotNumber}`, 'active');
+      }
+      
+      closeModal();
+      startLoadingSequence();
+    }
+
+    function startLoadingSequence() {
+      // Hide menu elements
+      menuContainer.style.display = 'none';
+      
+      // Set background to solid black
+      document.body.classList.add('state-black');
+      
+      // Show loading screen
+      loadingContainer.style.display = 'flex';
+
+      // Animate progress bar
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 2;
+        progressFill.style.width = progress + '%';
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          finishLoading();
+        }
+      }, 40); // Runs transition over ~2 seconds
+    }
+
+    function finishLoading() {
+      // Hide loading screen and transition to full white
+      loadingContainer.style.display = 'none';
+      document.body.classList.remove('state-black');
+      document.body.classList.add('state-white');
+    }
   </script>
 
 </body>
