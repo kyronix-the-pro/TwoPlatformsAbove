@@ -12,6 +12,12 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
+    /* Remove any blue link styling site-wide */
+    a, a:visited, a:hover, a:active {
+      color: inherit;
+      text-decoration: none;
+    }
+
     /* Screen Base & Animated Gradient Background */
     body {
       height: 100vh;
@@ -49,6 +55,7 @@
       text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
       margin-bottom: 10px;
       font-weight: 800;
+      color: #ffffff;
     }
 
     /* Buttons */
